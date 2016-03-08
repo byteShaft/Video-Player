@@ -4,25 +4,27 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.ActivityInfo;
+import android.database.Cursor;
 import android.media.MediaPlayer;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.support.v4.view.GestureDetectorCompat;
 import android.support.v4.widget.SlidingPaneLayout;
 import android.support.v7.app.AppCompatActivity;
-import android.view.GestureDetector;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.MotionEvent;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.MediaController;
 
+import java.util.ArrayList;
+
 public class MainActivity extends AppCompatActivity implements View.OnClickListener,
         CustomVideoView.MediaPlayerStateChangedListener, MediaPlayer.OnCompletionListener {
 
-    SlidingPaneLayout mSlidingPanel;
-    ListView mMenuList;
+    private ListView mMenuList;
     private CustomVideoView mCustomVideoView;
     private boolean isLandscape = true;
     private Helpers mHelpers;
@@ -30,48 +32,20 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private Button mRotationButton;
     private GestureDetectorCompat mDetector;
     private ScreenStateListener mScreenStateListener;
-
-    @Override
-    public void onClick(View v) {
-
-    }
-
-    @Override
-    public void onPlaybackStateChanged(int state) {
-
-    }
-
-    @Override
-    public void onVideoViewPrepared(MediaPlayer mp) {
-
-    }
-
-    @Override
-    public void onCompletion(MediaPlayer mp) {
-
-    }
-
-    private static class Screen {
-        static class Brightness {
-            static final float HIGH = 1f;
-            static final float LOW = 0f;
-        }
-    }
-
-    private static class Sound {
-        static class Level {
-            static final int MINIMUM = 0;
-            static final int MAXIMUM = 15;
-        }
-    }
+    private SlidingPaneLayout mSlidingPanel;
+    private ListView mVideoList;
+    private ArrayAdapter<String> adapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         mHelpers = new Helpers(getApplicationContext());
+        adapter = new ArrayAdapter<>(getApplicationContext(), android.R.layout.simple_list_item_1,
+                mHelpers.getVideoTitles(mHelpers.getAllVideosUri()));
         mSlidingPanel = (SlidingPaneLayout) findViewById(R.id.SlidingPanel);
-        mMenuList = (ListView) findViewById(R.id.MenuList);
+        mVideoList = (ListView) findViewById(R.id.video_list);
+        mVideoList.setAdapter(adapter);
         SlidingPaneLayout.PanelSlideListener panelListener = new SlidingPaneLayout.PanelSlideListener(){
 
             @Override
@@ -91,11 +65,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mSlidingPanel.setParallaxDistance(300);
         mScreenStateListener = new ScreenStateListener(mCustomVideoView);
         final IntentFilter filter = new IntentFilter(Intent.ACTION_SCREEN_OFF);
-        mDetector = new GestureDetectorCompat(this, new GestureListener());
         mCustomVideoView = (CustomVideoView) findViewById(R.id.videoSurface);
         mCustomVideoView.setMediaPlayerStateChangedListener(this);
         mCustomVideoView.setOnCompletionListener(this);
-        mHelpers.setScreenBrightness(getWindow(), Screen.Brightness.HIGH);
         CustomMediaController mediaController = new CustomMediaController(this);
         mediaController.setAnchorView(mCustomVideoView);
         mCustomVideoView.setMediaController(mediaController);
@@ -128,6 +100,27 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         return super.onOptionsItemSelected(item);
     }
 
+    @Override
+    public void onPlaybackStateChanged(int state) {
+
+    }
+
+    @Override
+    public void onVideoViewPrepared(MediaPlayer mp) {
+        setVideoOrientation();
+
+    }
+
+    @Override
+    public void onClick(View v) {
+
+    }
+
+    @Override
+    public void onCompletion(MediaPlayer mp) {
+
+    }
+
     class CustomMediaController extends MediaController {
 
         public CustomMediaController(Context context) {
@@ -147,62 +140,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 //            mOverlayButton.setVisibility(INVISIBLE);
 //            mRotationButton.setVisibility(INVISIBLE);
         }
-    }
-
-    class GestureListener extends GestureDetector.SimpleOnGestureListener {
-
-        final double BRIGHTNESS_STEP = 0.066;
-        final int VOLUME_STEP = 1;
-        private float lastTrackedPosition;
-
-        @Override
-        public boolean onDown(MotionEvent e) {
-            lastTrackedPosition = e.getY();
-            return super.onDown(e);
-        }
-
-        @Override
-        public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
-            final int ACTIVITY_HEIGHT_FRAGMENT = getActivityHeight() / 50;
-            float touchX = e2.getX();
-            float touchY = e2.getY();
-            if (touchX < getActivityWidth() / 2) {
-                float brightness = mHelpers.getCurrentBrightness(getWindow());
-                if (touchY >= lastTrackedPosition + ACTIVITY_HEIGHT_FRAGMENT &&
-                        brightness - BRIGHTNESS_STEP > Screen.Brightness.LOW) {
-                    brightness -= BRIGHTNESS_STEP;
-                    mHelpers.setScreenBrightness(getWindow(), brightness);
-                    lastTrackedPosition = touchY;
-                } else if (touchY <= lastTrackedPosition - ACTIVITY_HEIGHT_FRAGMENT &&
-                        brightness + BRIGHTNESS_STEP <= Screen.Brightness.HIGH) {
-                    brightness += BRIGHTNESS_STEP;
-                    mHelpers.setScreenBrightness(getWindow(), brightness);
-                    lastTrackedPosition = touchY;
-                }
-            } else {
-                int currentVolume = mHelpers.getCurrentVolume();
-                if (touchY > lastTrackedPosition + ACTIVITY_HEIGHT_FRAGMENT &&
-                        currentVolume - VOLUME_STEP >= Sound.Level.MINIMUM) {
-                    currentVolume -= VOLUME_STEP;
-                    mHelpers.setVolume(currentVolume);
-                    lastTrackedPosition = touchY;
-                } else if (touchY <= lastTrackedPosition - ACTIVITY_HEIGHT_FRAGMENT &&
-                        currentVolume + VOLUME_STEP <= Sound.Level.MAXIMUM) {
-                    currentVolume += VOLUME_STEP;
-                    mHelpers.setVolume(currentVolume);
-                    lastTrackedPosition = touchY;
-                }
-            }
-            return super.onScroll(e1, e2, distanceX, distanceY);
-        }
-    }
-
-    private int getActivityHeight() {
-        return getWindow().getDecorView().getHeight();
-    }
-
-    private int getActivityWidth() {
-        return getWindow().getDecorView().getWidth();
     }
 
     private void setVideoOrientation() {
