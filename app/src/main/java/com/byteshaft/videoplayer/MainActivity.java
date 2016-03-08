@@ -5,18 +5,25 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.ActivityInfo;
 import android.media.MediaPlayer;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.view.GestureDetectorCompat;
 import android.support.v4.widget.SlidingPaneLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.MediaController;
+import android.widget.TextView;
+
+import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener,
         CustomVideoView.MediaPlayerStateChangedListener, MediaPlayer.OnCompletionListener {
@@ -24,23 +31,31 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private ListView mMenuList;
     private CustomVideoView mCustomVideoView;
     private boolean isLandscape = true;
-    private Helpers mHelpers;
+    public Helpers mHelpers;
     private Button mOverlayButton;
     private Button mRotationButton;
     private GestureDetectorCompat mDetector;
     private ScreenStateListener mScreenStateListener;
     private SlidingPaneLayout mSlidingPanel;
     private ListView mVideoList;
-    private ArrayAdapter<String> adapter;
+    private VideoListAdapter adapter;
     private Toolbar toolbar;
+    private ArrayList<String> mVideosTitles;
+    private ArrayList<String> videoPathList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        new BitmapCache();
         mHelpers = new Helpers(getApplicationContext());
-        adapter = new ArrayAdapter<>(getApplicationContext(), android.R.layout.simple_list_item_1,
-                mHelpers.getVideoTitles(mHelpers.getAllVideosUri()));
+        mVideosTitles = new ArrayList<>();
+        videoPathList = new ArrayList<>();
+        videoPathList = mHelpers.getAllVideosUri();
+        mVideosTitles = mHelpers.getVideoTitles(videoPathList);
+        System.out.println(mVideosTitles);
+        adapter = new VideoListAdapter(getApplicationContext(), R.layout.row,
+                mVideosTitles);
         mSlidingPanel = (SlidingPaneLayout) findViewById(R.id.SlidingPanel);
         mVideoList = (ListView) findViewById(R.id.video_list);
         mVideoList.setAdapter(adapter);
@@ -68,7 +83,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mCustomVideoView = (CustomVideoView) findViewById(R.id.videoSurface);
         mCustomVideoView.setMediaPlayerStateChangedListener(this);
         mCustomVideoView.setOnCompletionListener(this);
-        CustomMediaController mediaController = new CustomMediaController(this);
+        MediaController mediaController = new MediaController(this);
         mediaController.setAnchorView(mCustomVideoView);
         mCustomVideoView.setMediaController(mediaController);
         registerReceiver(mScreenStateListener, filter);
@@ -121,27 +136,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     }
 
-    class CustomMediaController extends MediaController {
-
-        public CustomMediaController(Context context) {
-            super(context);
-        }
-
-        @Override
-        public void show() {
-            super.show();
-//            mOverlayButton.setVisibility(VISIBLE);
-//            mRotationButton.setVisibility(VISIBLE);
-        }
-
-        @Override
-        public void hide() {
-            super.hide();
-//            mOverlayButton.setVisibility(INVISIBLE);
-//            mRotationButton.setVisibility(INVISIBLE);
-        }
-    }
-
     private void setVideoOrientation() {
         if (mHelpers.isVideoPortrait(mCustomVideoView.getVideoHeight(),
                 mCustomVideoView.getVideoWidth())) {
@@ -150,5 +144,48 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
         }
     }
+
+    class VideoListAdapter extends ArrayAdapter<String> {
+
+        public VideoListAdapter(Context context, int resource, ArrayList<String> videos) {
+            super(context, resource, videos);
+        }
+
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent) {
+            ViewHolder holder;
+            if (convertView == null) {
+                LayoutInflater inflater = getLayoutInflater();
+                convertView = inflater.inflate(R.layout.row, parent, false);
+                holder = new ViewHolder();
+                holder.title = (TextView) convertView.findViewById(R.id.FilePath);
+                holder.time = (TextView) convertView.findViewById(R.id.tv);
+                holder.thumbnail = (ImageView) convertView.findViewById(R.id.Thumbnail);
+                convertView.setTag(holder);
+            } else {
+                holder = (ViewHolder) convertView.getTag();
+            }
+            holder.title.setText(mVideosTitles.get(position));
+            holder.time.setText(
+                    mHelpers.getFormattedTime((mHelpers.getDurationForVideo(position))));
+            holder.position = position;
+            if (BitmapCache.getBitmapFromMemCache(String.valueOf(position)) == null) {
+                holder.thumbnail.setImageURI(null);
+                new ThumbnailCreationTask(getApplicationContext(),
+                        holder, position).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+            } else {
+                holder.thumbnail.setImageBitmap(BitmapCache.getBitmapFromMemCache
+                        (String.valueOf(position)));
+            }
+            return convertView;
+        }
+    }
+
+        static class ViewHolder {
+            public TextView title;
+            public TextView time;
+            public ImageView thumbnail;
+            public int position;
+        }
 }
 

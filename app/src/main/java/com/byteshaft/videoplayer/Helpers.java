@@ -65,14 +65,13 @@ public class Helpers extends ContextWrapper {
                 Projection, null, null, null);
     }
 
-    String[] getVideoTitles(ArrayList<String> videos) {
+    ArrayList<String> getVideoTitles(ArrayList<String> videos) {
         ArrayList<String> vids = new ArrayList<>();
         for (String video : videos) {
             File file = new File(video);
             vids.add(file.getName());
         }
-        String[] realVideos = new String[vids.size()];
-        return vids.toArray(realVideos);
+        return vids;
     }
 
     void playVideoForLocation(String filename, int startPosition) {
