@@ -1,13 +1,9 @@
 package com.byteshaft.videoplayer;
 
 import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
-import android.content.pm.ActivityInfo;
 import android.media.MediaPlayer;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.v4.view.GestureDetectorCompat;
 import android.support.v4.widget.SlidingPaneLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -16,8 +12,8 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.MediaController;
@@ -26,16 +22,10 @@ import android.widget.TextView;
 import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener,
-        CustomVideoView.MediaPlayerStateChangedListener, MediaPlayer.OnCompletionListener {
+        CustomVideoView.MediaPlayerStateChangedListener, MediaPlayer.OnCompletionListener, AdapterView.OnItemClickListener {
 
-    private ListView mMenuList;
     private CustomVideoView mCustomVideoView;
-    private boolean isLandscape = true;
     public Helpers mHelpers;
-    private Button mOverlayButton;
-    private Button mRotationButton;
-    private GestureDetectorCompat mDetector;
-    private ScreenStateListener mScreenStateListener;
     private SlidingPaneLayout mSlidingPanel;
     private ListView mVideoList;
     private VideoListAdapter adapter;
@@ -53,12 +43,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         videoPathList = new ArrayList<>();
         videoPathList = mHelpers.getAllVideosUri();
         mVideosTitles = mHelpers.getVideoTitles(videoPathList);
-        System.out.println(mVideosTitles);
         adapter = new VideoListAdapter(getApplicationContext(), R.layout.row,
                 mVideosTitles);
         mSlidingPanel = (SlidingPaneLayout) findViewById(R.id.SlidingPanel);
         mVideoList = (ListView) findViewById(R.id.video_list);
         mVideoList.setAdapter(adapter);
+        mVideoList.setOnItemClickListener(this);
         toolbar = (Toolbar) findViewById(R.id.toolbar);
         toolbar.setNavigationIcon(R.drawable.ic_action_menu);
         SlidingPaneLayout.PanelSlideListener panelListener = new SlidingPaneLayout.PanelSlideListener(){
@@ -78,19 +68,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         };
         mSlidingPanel.setPanelSlideListener(panelListener);
         mSlidingPanel.setParallaxDistance(300);
-        mScreenStateListener = new ScreenStateListener(mCustomVideoView);
-        final IntentFilter filter = new IntentFilter(Intent.ACTION_SCREEN_OFF);
         mCustomVideoView = (CustomVideoView) findViewById(R.id.videoSurface);
         mCustomVideoView.setMediaPlayerStateChangedListener(this);
         mCustomVideoView.setOnCompletionListener(this);
         MediaController mediaController = new MediaController(this);
         mediaController.setAnchorView(mCustomVideoView);
         mCustomVideoView.setMediaController(mediaController);
-        registerReceiver(mScreenStateListener, filter);
-        mCustomVideoView.setVideoPath("");
-        mCustomVideoView.seekTo(0);
-        mCustomVideoView.start();
-
     }
 
     @Override
@@ -122,7 +105,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     public void onVideoViewPrepared(MediaPlayer mp) {
-        setVideoOrientation();
+        mp.start();
 
     }
 
@@ -135,14 +118,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void onCompletion(MediaPlayer mp) {
 
     }
+    @Override
+    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+        mCustomVideoView.setVideoPath(videoPathList.get(position));
+        mCustomVideoView.seekTo(0);
+//        mCustomVideoView.start();
 
-    private void setVideoOrientation() {
-        if (mHelpers.isVideoPortrait(mCustomVideoView.getVideoHeight(),
-                mCustomVideoView.getVideoWidth())) {
-            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-        } else {
-            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
-        }
     }
 
     class VideoListAdapter extends ArrayAdapter<String> {
