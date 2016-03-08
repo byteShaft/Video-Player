@@ -32,6 +32,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private Toolbar toolbar;
     private ArrayList<String> mVideosTitles;
     private ArrayList<String> videoPathList;
+    private String currentItem;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,6 +42,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mHelpers = new Helpers(getApplicationContext());
         mVideosTitles = new ArrayList<>();
         videoPathList = new ArrayList<>();
+        final MediaController mediaController = new MediaController(this);
         videoPathList = mHelpers.getAllVideosUri();
         mVideosTitles = mHelpers.getVideoTitles(videoPathList);
         adapter = new VideoListAdapter(getApplicationContext(), R.layout.row,
@@ -63,6 +65,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
             @Override
             public void onPanelSlide(View arg0, float arg1) {
+                if (mediaController.isShowing()) {
+                    mediaController.hide();
+                }
 
             }
         };
@@ -71,9 +76,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mCustomVideoView = (CustomVideoView) findViewById(R.id.videoSurface);
         mCustomVideoView.setMediaPlayerStateChangedListener(this);
         mCustomVideoView.setOnCompletionListener(this);
-        MediaController mediaController = new MediaController(this);
         mediaController.setAnchorView(mCustomVideoView);
         mCustomVideoView.setMediaController(mediaController);
+        mSlidingPanel.openPane();
+    }
+
+    @Override
+    public void onBackPressed() {
+        if (!mSlidingPanel.isOpen()) {
+            mSlidingPanel.openPane();
+        } else {
+            super.onBackPressed();
+        }
     }
 
     @Override
@@ -122,7 +136,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         mCustomVideoView.setVideoPath(videoPathList.get(position));
         mCustomVideoView.seekTo(0);
-//        mCustomVideoView.start();
+        currentItem = videoPathList.get(position);
+        mSlidingPanel.closePane();
 
     }
 
