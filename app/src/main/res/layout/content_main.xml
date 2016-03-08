@@ -1,5 +1,6 @@
 <android.support.v4.widget.SlidingPaneLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/SlidingPanel"
+    android:background="@android:color/white"
     android:layout_width="match_parent"
     android:layout_height="match_parent" >
 
@@ -9,7 +10,8 @@
         android:layout_gravity="left">
 
         <ListView
-            android:id="@+id/MenuList"
+            android:id="@+id/video_list"
+            android:background="@android:color/black"
             android:layout_width="match_parent"
             android:layout_height="match_parent" >
         </ListView>
@@ -22,10 +24,6 @@
         android:background="#101010"
         android:orientation="vertical" >
 
-        <ImageView
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:src="@mipmap/ic_launcher" />
     </LinearLayout>
 
 </android.support.v4.widget.SlidingPaneLayout>
