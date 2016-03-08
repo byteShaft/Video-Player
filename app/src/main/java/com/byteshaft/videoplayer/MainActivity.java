@@ -4,13 +4,12 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.ActivityInfo;
-import android.database.Cursor;
 import android.media.MediaPlayer;
 import android.os.Bundle;
-import android.provider.MediaStore;
 import android.support.v4.view.GestureDetectorCompat;
 import android.support.v4.widget.SlidingPaneLayout;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -18,8 +17,6 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.MediaController;
-
-import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener,
         CustomVideoView.MediaPlayerStateChangedListener, MediaPlayer.OnCompletionListener {
@@ -35,6 +32,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private SlidingPaneLayout mSlidingPanel;
     private ListView mVideoList;
     private ArrayAdapter<String> adapter;
+    private Toolbar toolbar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,6 +44,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mSlidingPanel = (SlidingPaneLayout) findViewById(R.id.SlidingPanel);
         mVideoList = (ListView) findViewById(R.id.video_list);
         mVideoList.setAdapter(adapter);
+        toolbar = (Toolbar) findViewById(R.id.toolbar);
+        toolbar.setNavigationIcon(R.drawable.ic_action_menu);
         SlidingPaneLayout.PanelSlideListener panelListener = new SlidingPaneLayout.PanelSlideListener(){
 
             @Override
