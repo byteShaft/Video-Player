@@ -5,18 +5,27 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <LinearLayout
+    <RelativeLayout
         android:layout_width="260dp"
         android:layout_height="match_parent"
-        android:layout_gravity="left">
+        android:layout_gravity="left" >
+
+        <android.support.v7.widget.Toolbar
+            android:id="@+id/titlebar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:background="?attr/colorPrimary"
+            app:popupTheme="@style/AppTheme.PopupOverlay" />
 
         <ListView
             android:id="@+id/video_list"
-            android:background="@android:color/black"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent" >
+            android:background="#000000"
+            android:layout_below="@id/titlebar"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent" >
         </ListView>
-    </LinearLayout>
+
+    </RelativeLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -34,7 +43,7 @@
             <com.byteshaft.videoplayer.CustomVideoView
                 android:id="@+id/videoSurface"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"/>
-</LinearLayout>
+                android:layout_height="wrap_content" />
+    </LinearLayout>
 
 </android.support.v4.widget.SlidingPaneLayout>
