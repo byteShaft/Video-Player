@@ -33,6 +33,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private ListView mVideoList;
     private ArrayAdapter<String> adapter;
     private Toolbar toolbar;
+    private Toolbar listToolbar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,8 +45,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mSlidingPanel = (SlidingPaneLayout) findViewById(R.id.SlidingPanel);
         mVideoList = (ListView) findViewById(R.id.video_list);
         mVideoList.setAdapter(adapter);
+        listToolbar = (Toolbar) findViewById(R.id.titlebar);
+        listToolbar.setTitle("Videos");
         toolbar = (Toolbar) findViewById(R.id.toolbar);
         toolbar.setNavigationIcon(R.drawable.ic_action_menu);
+        toolbar.setTitle("Prototype");
         SlidingPaneLayout.PanelSlideListener panelListener = new SlidingPaneLayout.PanelSlideListener(){
 
             @Override
