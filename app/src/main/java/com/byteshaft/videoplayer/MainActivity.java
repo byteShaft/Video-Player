@@ -78,7 +78,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mCustomVideoView.setOnCompletionListener(this);
         mediaController.setAnchorView(mCustomVideoView);
         mCustomVideoView.setMediaController(mediaController);
-        mSlidingPanel.openPane();
+        mCustomVideoView.setVideoPath("https://cdn.scissorboy.com/episode/WellaApp/HLSPRO/WellaInnosense-Color_and_Style.1280x720_HLSPRO-2.m3u8");
+        mCustomVideoView.seekTo(0);
     }
 
     @Override
@@ -134,10 +135,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-        mCustomVideoView.setVideoPath(videoPathList.get(position));
-        mCustomVideoView.seekTo(0);
-        currentItem = videoPathList.get(position);
-        mSlidingPanel.closePane();
 
     }
 
