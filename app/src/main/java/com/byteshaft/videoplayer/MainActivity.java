@@ -194,7 +194,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://www.instagram.com/"));
                 startActivity(browserIntent);
                 break;
-
         }
 
     }
