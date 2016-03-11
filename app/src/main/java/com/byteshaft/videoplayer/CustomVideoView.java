@@ -10,13 +10,7 @@ import java.util.ArrayList;
 
 public class CustomVideoView extends VideoView implements MediaPlayer.OnPreparedListener {
 
-    static final int PLAYING = 1;
-    static final int PAUSED = 0;
-
-    private Uri mCurrentlyPlayingVideoUri;
     private ArrayList<MediaPlayerStateChangedListener> mListeners = new ArrayList<>();
-    private int mVideoHeight;
-    private int mVideoWidth;
 
     public CustomVideoView(Context context) {
         super(context);
@@ -53,36 +47,21 @@ public class CustomVideoView extends VideoView implements MediaPlayer.OnPrepared
     @Override
     public void stopPlayback() {
         super.stopPlayback();
-        mCurrentlyPlayingVideoUri = null;
     }
 
     @Override
     public void setVideoURI(Uri uri) {
         super.setVideoURI(uri);
-        mCurrentlyPlayingVideoUri = uri;
-    }
-
-    public Uri getVideoURI() {
-        return mCurrentlyPlayingVideoUri;
     }
 
     @Override
     public void onPrepared(MediaPlayer mp) {
-        mVideoHeight = mp.getVideoHeight();
-        mVideoWidth = mp.getVideoWidth();
         for (MediaPlayerStateChangedListener listener : mListeners) {
             listener.onVideoViewPrepared(mp);
         }
 
     }
 
-    public int getVideoHeight() {
-        return mVideoHeight;
-    }
-
-    public int getVideoWidth() {
-        return mVideoWidth;
-    }
 
     public interface MediaPlayerStateChangedListener {
         public void onPlaybackStateChanged(int state);

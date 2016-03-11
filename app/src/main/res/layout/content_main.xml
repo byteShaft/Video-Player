@@ -27,24 +27,69 @@
 
     </RelativeLayout>
 
-    <LinearLayout
+    <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="right"
-        android:background="#d3d3d3"
-        android:orientation="vertical" >
+        android:layout_gravity="right" >
         <android.support.v7.widget.Toolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
             android:background="?attr/colorPrimary"
             app:popupTheme="@style/AppTheme.PopupOverlay" />
+        <RelativeLayout
+            android:id="@+id/video"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
 
         <com.byteshaft.videoplayer.CustomVideoView
             android:id="@+id/videoSurface"
+            android:layout_width="wrap_content"
+            android:layout_height="300dp" />
+
+        </RelativeLayout>
+        <RelativeLayout
+            android:layout_below="@+id/video"
+            android:id="@+id/sound"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+            <ImageView
+                android:id="@+id/image"
+                android:src="@drawable/sound"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+        <SeekBar
+            android:id="@+id/sound_seek_bar"
+            android:layout_width="200dp"
+            android:layout_height="wrap_content" />
+        </RelativeLayout>
+        <RelativeLayout
+            android:layout_alignParentBottom="true"
+            android:gravity="bottom|center"
             android:layout_width="fill_parent"
-            android:layout_height="fill_parent"
-            android:layout_centerInParent="true"/>
-    </LinearLayout>
+            android:layout_height="wrap_content">
+            <Button
+                android:id="@+id/google_button"
+                android:layout_marginLeft="10dp"
+                android:text="G+"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+            <Button
+                android:text="Facebook"
+                android:layout_marginLeft="5dp"
+                android:layout_toRightOf="@id/google_button"
+                android:id="@+id/facebook"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+            <Button
+                android:id="@+id/instagram"
+                android:layout_marginLeft="5dp"
+                android:layout_toRightOf="@id/facebook"
+                android:text="Instagram"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+        </RelativeLayout>
+    </RelativeLayout>
+
 
 </android.support.v4.widget.SlidingPaneLayout>

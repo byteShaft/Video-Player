@@ -1,7 +1,10 @@
 package com.byteshaft.videoplayer;
 
 import android.content.Context;
+import android.content.Intent;
+import android.media.AudioManager;
 import android.media.MediaPlayer;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.widget.SlidingPaneLayout;
@@ -14,9 +17,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.MediaController;
+import android.widget.SeekBar;
 import android.widget.TextView;
 
 import java.util.ArrayList;
@@ -32,17 +37,29 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private Toolbar toolbar;
     private ArrayList<String> mVideosTitles;
     private ArrayList<String> videoPathList;
-    private String currentItem;
+    private SeekBar mSeekBarVolume;
+    private AudioManager audioManager;
+    private Button mGmailButton;
+    private Button mFaceBooKbutton;
+    private Button mInstrgramButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        mSeekBarVolume = (SeekBar) findViewById(R.id.sound_seek_bar);
+        mGmailButton = (Button) findViewById(R.id.google_button);
+        mFaceBooKbutton = (Button) findViewById(R.id.facebook);
+        mInstrgramButton = (Button) findViewById(R.id.instagram);
+        mGmailButton.setOnClickListener(this);
+        mFaceBooKbutton.setOnClickListener(this);
+        mInstrgramButton.setOnClickListener(this);
         new BitmapCache();
         mHelpers = new Helpers(getApplicationContext());
         mVideosTitles = new ArrayList<>();
         videoPathList = new ArrayList<>();
-        final MediaController mediaController = new MediaController(this);
+        mCustomVideoView = (CustomVideoView) findViewById(R.id.videoSurface);
+        final MediaController mediaController = new MediaController(mCustomVideoView.getContext());
         videoPathList = mHelpers.getAllVideosUri();
         mVideosTitles = mHelpers.getVideoTitles(videoPathList);
         adapter = new VideoListAdapter(getApplicationContext(), R.layout.row,
@@ -73,12 +90,50 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         };
         mSlidingPanel.setPanelSlideListener(panelListener);
         mSlidingPanel.setParallaxDistance(300);
-        mCustomVideoView = (CustomVideoView) findViewById(R.id.videoSurface);
         mCustomVideoView.setMediaPlayerStateChangedListener(this);
         mCustomVideoView.setOnCompletionListener(this);
         mediaController.setAnchorView(mCustomVideoView);
         mCustomVideoView.setMediaController(mediaController);
-        mSlidingPanel.openPane();
+        mCustomVideoView.setVideoPath("https://cdn.scissorboy.com/episode/WellaApp/HLSPRO/WellaInnosense-Color_and_Style.1280x720_HLSPRO-2.m3u8");
+        mCustomVideoView.seekTo(0);
+        initControls();
+    }
+
+    private void initControls()
+    {
+        try
+        {
+            audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+            mSeekBarVolume.setMax(audioManager
+                    .getStreamMaxVolume(AudioManager.STREAM_MUSIC));
+            mSeekBarVolume.setProgress(audioManager
+                    .getStreamVolume(AudioManager.STREAM_MUSIC));
+
+
+            mSeekBarVolume.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener()
+            {
+                @Override
+                public void onStopTrackingTouch(SeekBar arg0)
+                {
+                }
+
+                @Override
+                public void onStartTrackingTouch(SeekBar arg0)
+                {
+                }
+
+                @Override
+                public void onProgressChanged(SeekBar arg0, int progress, boolean arg2)
+                {
+                    audioManager.setStreamVolume(AudioManager.STREAM_MUSIC,
+                            progress, 0);
+                }
+            });
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -125,6 +180,21 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     public void onClick(View v) {
+        Intent browserIntent;
+        switch (v.getId()) {
+            case R.id.google_button:
+                browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://plus.google.com/"));
+                startActivity(browserIntent);
+                break;
+            case R.id.facebook:
+                browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://www.facebook.com/"));
+                startActivity(browserIntent);
+                break;
+            case R.id.instagram:
+                browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://www.instagram.com/"));
+                startActivity(browserIntent);
+                break;
+        }
 
     }
 
@@ -134,10 +204,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-        mCustomVideoView.setVideoPath(videoPathList.get(position));
-        mCustomVideoView.seekTo(0);
-        currentItem = videoPathList.get(position);
-        mSlidingPanel.closePane();
 
     }
 
